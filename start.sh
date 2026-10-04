@@ -37,7 +37,9 @@ cat <<EOF > /root/.openclaw/openclaw.json
     }
   },
   "plugins": {
-    "entries": {
+    
+        "allow": ["openrouter", "telegram", "memory-core"],
+        "entries": {
       "openrouter": {
         "enabled": true
       },
