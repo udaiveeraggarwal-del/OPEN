@@ -25,7 +25,7 @@ cat <<EOF > /root/.openclaw/openclaw.json
       "models": {
         "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free": {}
       },
-      "thinkingDefault": "high"
+      "thinkingDefault": "high", "maxConcurrent": 1, "subagents": {"maxConcurrent": 1, "maxChildrenPerAgent": 1}
     },
     "entries": {
       "main": {
@@ -40,6 +40,7 @@ cat <<EOF > /root/.openclaw/openclaw.json
     
         "allow": ["openrouter", "telegram", "memory-core"],
         "entries": {
+      "memory-core": {"enabled": true, "config": {"dreaming": {"enabled": false}}},
       "openrouter": {
         "enabled": true
       },
@@ -48,6 +49,7 @@ cat <<EOF > /root/.openclaw/openclaw.json
       }
     }
   },
+  "tools": {"swarm": false},
   "gateway": {
     "mode": "local",
     "auth": {
