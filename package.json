@@ -1,0 +1,12 @@
+{
+  "name": "openclaw-cloud",
+  "version": "1.0.0",
+  "description": "24/7 OpenClaw Telegram Bot on Railway",
+  "main": "index.js",
+  "scripts": {
+    "start": "sh start.sh"
+  },
+  "dependencies": {
+    "openclaw": "2026.9.7"
+  }
+}
