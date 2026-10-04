@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+: "${OPENCLAW_GATEWAY_TOKEN:?Set OPENCLAW_GATEWAY_TOKEN in Railway Variables before startup}"
+
 mkdir -p /root/.openclaw
 
 cat <<EOF > /root/.openclaw/openclaw.json
@@ -25,7 +27,7 @@ cat <<EOF > /root/.openclaw/openclaw.json
       "models": {
         "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free": {}
       },
-      "thinkingDefault": "high", "maxConcurrent": 1, "subagents": {"maxConcurrent": 1, "maxChildrenPerAgent": 1}
+      "thinkingDefault": "high"
     },
     "entries": {
       "main": {
@@ -37,24 +39,18 @@ cat <<EOF > /root/.openclaw/openclaw.json
     }
   },
   "plugins": {
-    
-        "allow": ["openrouter", "telegram", "memory-core"],
-        "entries": {
-      "memory-core": {"enabled": true, "config": {"dreaming": {"enabled": false}}},
-      "openrouter": {
-        "enabled": true
-      },
-      "telegram": {
-        "enabled": true
-      }
+    "entries": {
+      "memory-core": {"enabled": true},
+      "openrouter": {"enabled": true},
+      "telegram": {"enabled": true}
     }
   },
-  "tools": {"swarm": false},
+  "tools": {"swarm": true},
   "gateway": {
     "mode": "local",
     "auth": {
       "mode": "token",
-      "token": "${OPENCLAW_GATEWAY_TOKEN:-cbc5fcfa43305654e0d5339c2808e04b38172f142b41d991}"
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
     }
   },
   "channels": {
@@ -62,13 +58,9 @@ cat <<EOF > /root/.openclaw/openclaw.json
       "enabled": true,
       "botToken": "${TELEGRAM_BOT_TOKEN}",
       "dmPolicy": "open",
-      "allowFrom": [
-        "*"
-      ],
+      "allowFrom": ["*"],
       "groupPolicy": "open",
-      "groupAllowFrom": [
-        "*"
-      ]
+      "groupAllowFrom": ["*"]
     }
   }
 }
