@@ -3,18 +3,35 @@ set -e
 
 echo "=== OpenClaw 24/7 Cloud Engine Starting ==="
 
+# Determine user home directory safely for root or non-root environments
+OPENCLAW_HOME="${HOME:-/root}"
+OPENCLAW_DIR="${OPENCLAW_HOME}/.openclaw"
+WORKSPACE_DIR="${OPENCLAW_DIR}/workspace"
+
+mkdir -p "$OPENCLAW_DIR"
+mkdir -p "$WORKSPACE_DIR"
+
+# Ensure node_modules/.bin is on PATH
+export PATH="./node_modules/.bin:$PATH"
+
+# Resolve openclaw executable
+if command -v openclaw >/dev/null 2>&1; then
+  OPENCLAW_CMD="openclaw"
+elif [ -f "./node_modules/.bin/openclaw" ]; then
+  OPENCLAW_CMD="./node_modules/.bin/openclaw"
+else
+  OPENCLAW_CMD="npx openclaw"
+fi
+
 # Gateway security token
 OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-cbc5fcfa43305654e0d5339c2808e04b38172f142b41d991}"
-
-mkdir -p /root/.openclaw
-mkdir -p /root/.openclaw/workspace
 
 # Configure Git inside cloud container
 git config --global user.name "${GIT_USER_NAME:-Udaiveer Aggarwal}"
 git config --global user.email "${GIT_USER_EMAIL:-udaiveer@openclaw.cloud}"
 git config --global init.defaultBranch main
 
-cd /root/.openclaw/workspace
+cd "$WORKSPACE_DIR"
 
 # Default to the newly created private repo if not overridden
 PRIVATE_REPO="${PRIVATE_REPO:-udaiveeraggarwal-del/OPENCLAW-CLOUD-}"
@@ -41,15 +58,13 @@ fi
 # AUTONOMOUS BACKGROUND AUTO-SYNC DAEMON
 # Runs continuously every 20 seconds. Any file created, modified, or deleted by
 # OpenClaw is automatically committed and pushed to the private GitHub repo.
-# ZERO manual commands required from the user!
 # ==============================================================================
 (
-  echo "[Auto-Sync Daemon] Started monitoring /root/.openclaw/workspace..."
+  echo "[Auto-Sync Daemon] Started monitoring $WORKSPACE_DIR..."
   while true; do
     sleep 20
-    if [ -d "/root/.openclaw/workspace/.git" ]; then
-      cd /root/.openclaw/workspace
-      # Check if any changes exist
+    if [ -d "$WORKSPACE_DIR/.git" ]; then
+      cd "$WORKSPACE_DIR"
       if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
         echo "[Auto-Sync] Changes detected! Saving and pushing to GitHub..."
         git add -A
@@ -63,7 +78,7 @@ fi
 ) &
 
 # Generate OpenClaw Configuration
-cat <<EOF > /root/.openclaw/openclaw.json
+cat <<EOF > "$OPENCLAW_DIR/openclaw.json"
 {
   "env": {
     "vars": {
@@ -73,7 +88,7 @@ cat <<EOF > /root/.openclaw/openclaw.json
   },
   "agents": {
     "defaults": {
-      "workspace": "/root/.openclaw/workspace",
+      "workspace": "${WORKSPACE_DIR}",
       "model": {
         "primary": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
         "fallbacks": [
@@ -88,8 +103,8 @@ cat <<EOF > /root/.openclaw/openclaw.json
     "entries": {
       "main": {
         "name": "main",
-        "workspace": "/root/.openclaw/workspace",
-        "agentDir": "/root/.openclaw/agents/main/agent",
+        "workspace": "${WORKSPACE_DIR}",
+        "agentDir": "${OPENCLAW_DIR}/agents/main/agent",
         "model": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
       }
     }
@@ -128,5 +143,5 @@ cat <<EOF > /root/.openclaw/openclaw.json
 EOF
 
 PORT="${PORT:-18789}"
-echo "Starting OpenClaw Gateway on port $PORT (LAN bind for web browser)..."
-exec openclaw gateway --port "$PORT" --bind lan --allow-unconfigured
+echo "Starting OpenClaw Gateway on port $PORT using $OPENCLAW_CMD..."
+exec $OPENCLAW_CMD gateway --port "$PORT" --bind lan --allow-unconfigured
