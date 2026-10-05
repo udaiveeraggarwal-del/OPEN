@@ -16,10 +16,10 @@ git config --global init.defaultBranch main
 
 cd /root/.openclaw/workspace
 
-# Resolve Private GitHub Repo URL if GITHUB_TOKEN & PRIVATE_REPO are provided
+# Default to the newly created private repo if not overridden
+PRIVATE_REPO="${PRIVATE_REPO:-udaiveeraggarwal-del/OPENCLAW-CLOUD-}"
 TARGET_REPO_URL="$PRIVATE_REPO_URL"
-if [ -z "$TARGET_REPO_URL" ] && [ -n "$GITHUB_TOKEN" ] && [ -n "$PRIVATE_REPO" ]; then
-  # Format: https://TOKEN@github.com/USERNAME/REPONAME.git
+if [ -z "$TARGET_REPO_URL" ] && [ -n "$GITHUB_TOKEN" ]; then
   TARGET_REPO_URL="https://${GITHUB_TOKEN}@github.com/${PRIVATE_REPO}.git"
 fi
 
