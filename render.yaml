@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: openclaw-cloud
+    runtime: docker
+    plan: free
+    region: oregon
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: OPENCLAW_GATEWAY_TOKEN
+        value: cbc5fcfa43305654e0d5339c2808e04b38172f142b41d991
+      - key: PRIVATE_REPO
+        value: udaiveeraggarwal-del/OPENCLAW-CLOUD-
