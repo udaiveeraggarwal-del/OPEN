@@ -77,10 +77,7 @@ cat <<EOF > /root/.openclaw/openclaw.json
       "model": {
         "primary": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
         "fallbacks": [
-          "openrouter/poolside/laguna-s-2.1:free",
-          "openrouter/nvidia/nemotron-3.5-lightning:free",
-          "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
-          "openrouter/cohere/north-mini-code:free"
+          "openrouter/nvidia/nemotron-3.5-lightning:free"
         ]
       },
       "models": {
