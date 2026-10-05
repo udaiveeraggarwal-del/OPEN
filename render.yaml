@@ -5,6 +5,8 @@ services:
     plan: free
     region: oregon
     envVars:
+      - key: PORT
+        value: 18789
       - key: OPENROUTER_API_KEY
         sync: false
       - key: TELEGRAM_BOT_TOKEN

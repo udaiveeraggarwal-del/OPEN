@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  openclaw:
+    build: .
+    container_name: openclaw-cloud
+    restart: always
+    ports:
+      - "18789:18789"
+    environment:
+      - PORT=18789
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:-cbc5fcfa43305654e0d5339c2808e04b38172f142b41d991}
+      - PRIVATE_REPO=${PRIVATE_REPO:-udaiveeraggarwal-del/OPENCLAW-CLOUD-}
+    volumes:
+      - openclaw_data:/root/.openclaw
+
+volumes:
+  openclaw_data:
