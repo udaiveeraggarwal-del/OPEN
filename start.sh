@@ -1,7 +1,16 @@
 #!/bin/sh
 set -e
 
-: "${OPENCLAW_GATEWAY_TOKEN:?Set OPENCLAW_GATEWAY_TOKEN in Railway Variables before startup}"
+# Default gateway token if not explicitly provided in Railway Variables
+OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-cbc5fcfa43305654e0d5339c2808e04b38172f142b41d991}"
+
+if [ -z "$OPENROUTER_API_KEY" ]; then
+  echo "⚠️ WARNING: OPENROUTER_API_KEY is not set in Railway Variables!"
+fi
+
+if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+  echo "⚠️ WARNING: TELEGRAM_BOT_TOKEN is not set in Railway Variables!"
+fi
 
 mkdir -p /root/.openclaw
 mkdir -p /root/.openclaw/workspace
@@ -11,7 +20,7 @@ git config --global user.name "${GIT_USER_NAME:-Udaiveer Aggarwal}"
 git config --global user.email "${GIT_USER_EMAIL:-udaiveer@openclaw.cloud}"
 git config --global init.defaultBranch main
 
-# If a Git repository URL is provided for the workspace, initialize or clone it
+# Setup Git workspace
 cd /root/.openclaw/workspace
 if [ -n "$WORKSPACE_REPO_URL" ]; then
   if [ ! -d ".git" ]; then
@@ -22,6 +31,18 @@ elif [ ! -d ".git" ]; then
   echo "Initializing local Git repository for workspace tracking..."
   git init
 fi
+
+# Add helper git-sync script for the agent
+cat <<'GITEVERY' > /root/.openclaw/workspace/git-sync.sh
+#!/bin/sh
+set -e
+git add -A
+git commit -m "Auto-save generated work: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
+if git remote get-url origin >/dev/null 2>&1; then
+  git push origin main || echo "Remote push skipped or authentication required"
+fi
+GITEVERY
+chmod +x /root/.openclaw/workspace/git-sync.sh
 
 # Generate openclaw.json with environment variables
 cat <<EOF > /root/.openclaw/openclaw.json
@@ -60,12 +81,12 @@ cat <<EOF > /root/.openclaw/openclaw.json
   },
   "plugins": {
     "entries": {
-      "memory-core": {"enabled": true},
-      "openrouter": {"enabled": true},
-      "telegram": {"enabled": true}
+      "memory-core": { "enabled": true },
+      "openrouter": { "enabled": true },
+      "telegram": { "enabled": true }
     }
   },
-  "tools": {"swarm": true},
+  "tools": { "swarm": true },
   "gateway": {
     "mode": "local",
     "bind": "lan",
@@ -79,9 +100,13 @@ cat <<EOF > /root/.openclaw/openclaw.json
       "enabled": true,
       "botToken": "${TELEGRAM_BOT_TOKEN}",
       "dmPolicy": "open",
-      "allowFrom": ["*"],
+      "allowFrom": [
+        "*"
+      ],
       "groupPolicy": "open",
-      "groupAllowFrom": ["*"]
+      "groupAllowFrom": [
+        "*"
+      ]
     }
   }
 }
