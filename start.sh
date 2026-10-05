@@ -4,12 +4,32 @@ set -e
 : "${OPENCLAW_GATEWAY_TOKEN:?Set OPENCLAW_GATEWAY_TOKEN in Railway Variables before startup}"
 
 mkdir -p /root/.openclaw
+mkdir -p /root/.openclaw/workspace
 
+# Configure Git inside the container
+git config --global user.name "${GIT_USER_NAME:-Udaiveer Aggarwal}"
+git config --global user.email "${GIT_USER_EMAIL:-udaiveer@openclaw.cloud}"
+git config --global init.defaultBranch main
+
+# If a Git repository URL is provided for the workspace, initialize or clone it
+cd /root/.openclaw/workspace
+if [ -n "$WORKSPACE_REPO_URL" ]; then
+  if [ ! -d ".git" ]; then
+    echo "Cloning workspace repository from $WORKSPACE_REPO_URL..."
+    git clone "$WORKSPACE_REPO_URL" . || git init
+  fi
+elif [ ! -d ".git" ]; then
+  echo "Initializing local Git repository for workspace tracking..."
+  git init
+fi
+
+# Generate openclaw.json with environment variables
 cat <<EOF > /root/.openclaw/openclaw.json
 {
   "env": {
     "vars": {
-      "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
+      "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+      "GITHUB_TOKEN": "${GITHUB_TOKEN}"
     }
   },
   "agents": {
@@ -48,6 +68,7 @@ cat <<EOF > /root/.openclaw/openclaw.json
   "tools": {"swarm": true},
   "gateway": {
     "mode": "local",
+    "bind": "lan",
     "auth": {
       "mode": "token",
       "token": "${OPENCLAW_GATEWAY_TOKEN}"
@@ -67,5 +88,5 @@ cat <<EOF > /root/.openclaw/openclaw.json
 EOF
 
 PORT="${PORT:-18789}"
-echo "Starting OpenClaw Gateway on port $PORT..."
-exec openclaw gateway --port "$PORT"
+echo "Starting OpenClaw Gateway on port $PORT (bind: lan)..."
+exec openclaw gateway --port "$PORT" --bind lan --allow-unconfigured
