@@ -64,5 +64,6 @@ Once deployed, OpenClaw runs an autonomous background sync loop every 20 seconds
 
 ## 🖥️ Accessing OpenClaw After Deployment
 Once deployed, access OpenClaw via:
-- **Web Browser**: `https://<YOUR-CLOUD-DOMAIN>/?token=<OPENCLAW_GATEWAY_TOKEN>`
+- **Web Browser (Render Live)**: `https://openclaw-cloud-hluj.onrender.com/?token=cbc5fcfa43305654e0d5339c2808e04b38172f142b41d991`
+- **Any Other Cloud Host**: `https://<YOUR-CLOUD-DOMAIN>/?token=<OPENCLAW_GATEWAY_TOKEN>`
 - **Telegram Bot**: Open your configured Telegram bot in Telegram and start chatting.

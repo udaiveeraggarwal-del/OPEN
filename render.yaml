@@ -11,7 +11,7 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false
       - key: TELEGRAM_BOT_TOKEN
-        sync: false
+        value: 8934206861:AAGzmumef_5UDfrzb87eM0nfPMbeW70iYnw
       - key: GITHUB_TOKEN
         sync: false
       - key: OPENCLAW_GATEWAY_TOKEN
