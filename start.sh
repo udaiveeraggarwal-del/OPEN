@@ -3,6 +3,10 @@ set -e
 
 echo "=== OpenClaw 24/7 Cloud Engine Starting ==="
 
+# Gateway security token
+OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-cbc5fcfa43305654e0d5339c2808e04b38172f142b41d991}"
+PRIVATE_REPO="${PRIVATE_REPO:-udaiveeraggarwal-del/OPENCLAW-CLOUD-}"
+
 # Determine user home directory safely for root or non-root environments
 OPENCLAW_HOME="${HOME:-/root}"
 OPENCLAW_DIR="${OPENCLAW_HOME}/.openclaw"
@@ -23,9 +27,6 @@ else
   OPENCLAW_CMD="npx openclaw"
 fi
 
-# Gateway security token
-OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-cbc5fcfa43305654e0d5339c2808e04b38172f142b41d991}"
-
 # Configure Git inside cloud container
 git config --global user.name "${GIT_USER_NAME:-Udaiveer Aggarwal}"
 git config --global user.email "${GIT_USER_EMAIL:-udaiveer@openclaw.cloud}"
@@ -33,8 +34,6 @@ git config --global init.defaultBranch main
 
 cd "$WORKSPACE_DIR"
 
-# Default to the newly created private repo if not overridden
-PRIVATE_REPO="${PRIVATE_REPO:-udaiveeraggarwal-del/OPENCLAW-CLOUD-}"
 TARGET_REPO_URL="$PRIVATE_REPO_URL"
 if [ -z "$TARGET_REPO_URL" ] && [ -n "$GITHUB_TOKEN" ]; then
   TARGET_REPO_URL="https://${GITHUB_TOKEN}@github.com/${PRIVATE_REPO}.git"
@@ -70,7 +69,7 @@ fi
         git add -A
         git commit -m "Auto-save: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" || true
         if git remote get-url origin >/dev/null 2>&1; then
-          git push origin main 2>&1 || echo "[Auto-Sync] Remote push pending (verify repo permissions)"
+          git push origin main 2>&1 || echo "[Auto-Sync] Remote push pending"
         fi
       fi
     fi
@@ -92,7 +91,9 @@ cat <<EOF > "$OPENCLAW_DIR/openclaw.json"
       "model": {
         "primary": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
         "fallbacks": [
-          "openrouter/nvidia/nemotron-3.5-lightning:free"
+          "openrouter/nvidia/nemotron-3.5-lightning:free",
+          "openrouter/poolside/laguna-s-2.1:free",
+          "openrouter/google/gemma-4-31b-it:free"
         ]
       },
       "models": {
@@ -142,6 +143,13 @@ cat <<EOF > "$OPENCLAW_DIR/openclaw.json"
 }
 EOF
 
+# Register OpenRouter API key into OpenClaw internal auth profiles
+if [ -n "$OPENROUTER_API_KEY" ]; then
+  echo "Registering OpenRouter API key into OpenClaw auth profile..."
+  printf '%s' "$OPENROUTER_API_KEY" | $OPENCLAW_CMD models auth paste-api-key --provider openrouter --profile-id openrouter:default 2>/dev/null || true
+  printf '%s' "$OPENROUTER_API_KEY" | $OPENCLAW_CMD models auth paste-api-key --provider openrouter --profile-id openrouter:manual 2>/dev/null || true
+fi
+
 PORT="${PORT:-18789}"
 echo "Starting OpenClaw Gateway on port $PORT using $OPENCLAW_CMD..."
-exec $OPENCLAW_CMD gateway --port "$PORT" --bind lan --allow-unconfigured
+exec $OPENCLAW_CMD gateway run --port "$PORT" --bind lan --allow-unconfigured
