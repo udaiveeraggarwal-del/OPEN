@@ -4,6 +4,7 @@ services:
     runtime: docker
     plan: free
     region: oregon
+    healthCheckPath: /healthz
     envVars:
       - key: PORT
         value: 18789
