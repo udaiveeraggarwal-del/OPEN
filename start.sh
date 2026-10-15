@@ -38,7 +38,8 @@ fi
 TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-8934206861:AAGzmumef_5UDfrzb87eM0nfPMbeW70iYnw}"
 PRIVATE_REPO="${PRIVATE_REPO:-udaiveeraggarwal-del/OPENCLAW-CLOUD-}"
 OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-cbc5fcfa43305654e0d5339c2808e04b38172f142b41d991}"
-PORT="${PORT:-18789}"
+# Render injects PORT automatically. Default to 10000 (Render's default) for safety.
+PORT="${PORT:-10000}"
 
 export OPENROUTER_API_KEY
 export TELEGRAM_BOT_TOKEN
@@ -152,9 +153,7 @@ cat <<EOF > "$OPENCLAW_DIR/openclaw.json"
     "port": ${PORT},
     "controlUi": {
       "allowedOrigins": [
-        "https://openclaw-cloud-hluj.onrender.com",
-        "http://localhost:${PORT}",
-        "http://127.0.0.1:${PORT}"
+        "*"
       ],
       "dangerouslyAllowHostHeaderOriginFallback": true
     },

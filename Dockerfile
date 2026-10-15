@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Install openclaw globally
-RUN npm install -g openclaw@2026.9.7
+# Install openclaw globally (latest stable)
+RUN npm install -g openclaw@2026.10.5
 
 # Copy project files
 COPY . .
@@ -20,8 +20,8 @@ COPY . .
 # Normalize line endings and grant execute permissions to start script
 RUN sed -i 's/\r$//' start.sh && chmod +x start.sh
 
-# Expose port (default 18789, or overridden by cloud environment $PORT)
-EXPOSE 18789
+# Expose port — Render sets $PORT at runtime, default fallback is 10000
+EXPOSE 10000
 
 # Run startup script
 CMD ["sh", "start.sh"]
